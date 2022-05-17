@@ -11,6 +11,7 @@ typedef enum {
 typedef enum {
     SNAKE_HEAD,
     SNAKE_PART,
+    SNAKE_TAIL,
     FROG,
     STONE,
     WALL,

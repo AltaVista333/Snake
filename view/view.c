@@ -32,8 +32,8 @@ float texCoord2[] = {1,-1,-1,-1,-1,1,1,1};
 
 //float vertex[] = {-1, -1,0,0,-1,0,0,0,0,-1,0,0};
 float vertex[] = {0, 1,0,1,1,0,1,0,0,0,0,0};
-float vertex2[] = {-1, -1,0,-1,1,0,0.6f,1,0,0.6f,-1,0};
-//float vertex2[] = {-1,0.7 ,0,0.7,0.7,0,0.7,-1,0,-1,-1,0};
+//float vertex2[] = {-1, -1,0,-1,1,0,0.6f,1,0,0.6f,-1,0};
+float vertex2[] = {-1,-1 ,0,-1,1,0,1,1,0,1,-1,0};
 float vertex5[] = {-1, -1,0,1,-1,0,1,1,0,-1,1,0};
 float texCoord5[] = {0,1,1,1,1,0,0,0};
 
@@ -111,20 +111,23 @@ void render_board_objects(Cell* cell){
     if(cell->state != FREE){
         render_object(cell->state);
     }
+//    if(cell->state == SNAKE_HEAD){
+//        printf("X : %d, Y : %d\n", cell->row, cell->col);
+//    }
 }
 
 void render_board() {
     glLoadIdentity();
-    // 2.0 это ширина и длина единичной матрицы.
-    //glScalef(2.0 / BOARD_COLS_COUNT, 2.0 / BOARD_ROWS_COUNT, 1);
-    glTranslatef(-1,-1,0);
-    glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
 
-    //glTranslatef(-0.5 * (BOARD_COLS_COUNT), -0.5 * BOARD_ROWS_COUNT, 0);
+    glTranslatef(-1,-1,0);
+   // glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
+    glScalef(2.0 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
+
     for (int i = 0; i < BOARD_ROWS_COUNT; ++i) {
         for (int j = 0; j < BOARD_COLS_COUNT; ++j) {
             glPushMatrix();
             glTranslatef(i,j,0);
+//            printf("I : %d, J : %d\n",i, j);
             render_board_objects(get_cell(i, j));
             glPopMatrix();
         }

@@ -9,6 +9,12 @@ typedef enum {
 } Direction;
 
 typedef enum {
+    HEAD,
+    BODY,
+    TAIL
+} Snake_part;
+
+typedef enum {
     SNAKE_HEAD,
     SNAKE_PART,
     SNAKE_TAIL,
@@ -23,8 +29,14 @@ typedef struct {
     float y;
 } Point;
 
+typedef struct {
+    int row;
+    int col;
+    CellState state;
+} Cell;
+
 typedef struct Node{
-    Point p;
+    Cell* cell;
     struct Node* next;
 } Node;
 
@@ -38,13 +50,7 @@ typedef struct {
     char* name;
 } Item;
 
-typedef struct {
-    int row;
-    int col;
-    Item* item;
-    CellState state;
-    int has_item;
-} Cell;
+
 
 typedef struct {
     Cell** cells;

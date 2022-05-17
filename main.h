@@ -1,13 +1,6 @@
-#ifndef SNAKE_2_MAIN_H
-#define SNAKE_2_MAIN_H
-typedef enum {
-    UP,
-    Right,
-    Down,
-    Left
-} Direction;
+#ifndef MAIN_H_
+#define MAIN_H_
 
 
-void move(Direction d);
-void pause();
-#endif //SNAKE_2_MAIN_H
+
+#endif // MAIN_H_

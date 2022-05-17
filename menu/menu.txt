@@ -1,0 +1,27 @@
+MenuBegin
+ ButtonBegin
+        Position_x=10
+        Position_y=130
+        Color=#FFFFFF
+        HighlightColor=#00FF00
+        Name=Start
+        Width=120
+        Height=30
+    ButtonEnd
+     ButtonBegin
+            Position_x=10
+            Position_y=40
+            Color=#FFFFFF
+            HighlightColor=#00FF00
+            Name=Exit
+            Width=120
+            Height=30
+        ButtonEnd
+ WindowBegin
+    Position_x =0
+    Position_y=0
+    Color=#AAFF00
+    Width=250
+    Height=250
+  WindowEnd
+MenuEnd

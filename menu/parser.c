@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
-#include "util.h"
+
 
 #define DELIMETR_SIZE 1
 #define BTN_MENU_CNT 9

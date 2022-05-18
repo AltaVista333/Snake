@@ -1,10 +1,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include "menu.h"
-#include "parser.h"
-#include "../logic/game.h"
+#include "menumain.h"
 
 void timer(int value_ms) {
   glutPostRedisplay();

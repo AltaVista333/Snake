@@ -1,7 +1,8 @@
-#include "parser.h"
+#pragma once
+
 #ifndef _MENU_H_
 #define _MENU_H_
-
+#include "parser.h"
 
 void SystemOpen();
 void show_menu();

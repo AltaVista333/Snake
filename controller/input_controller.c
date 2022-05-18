@@ -1,9 +1,7 @@
 #include <GL/glut.h>
 #include <stdlib.h>
 #include "input_controller.h"
-#include "../logic/game.h"
-#include "../util/logger.h"
-#include "../menu/menu.h"
+
 
 void specialKeys(int key, int x, int y) {
     if(get_game_state() == MENU){

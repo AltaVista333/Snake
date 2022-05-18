@@ -1,6 +1,9 @@
+#pragma once
+
 #ifndef _PARSER_H_
 #define _PARSER_H_
-
+#include "menu.h"
+#include "util.h"
 typedef struct {
   int x;
   int y;

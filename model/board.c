@@ -1,9 +1,13 @@
 #include <malloc.h>
 #include "board.h"
 #include "game.h"
+#include "../util/timer.h"
 #include <time.h>
 
 Board* board = NULL;
+clock_t frog_timer;
+CellState* state;
+void add_timer(int i, CellState *state);
 
 Board* init_board(){
     board = malloc(sizeof (Board));
@@ -35,28 +39,42 @@ void add_item(CellState item){
     int is_added = 0;
     int random_x = 0;
     int random_y = 0;
-
+    CellState* state;
     while (!is_added){
         srand(time(NULL));
         random_x = rand() % BOARD_COLS_COUNT;
         random_y = rand() % BOARD_ROWS_COUNT;
-        CellState* state = &board->cells[random_x][random_y].state;
+        state = &board->cells[random_x][random_y].state;
         if (*state == FREE){
             *state = item;
             is_added = 1;
         }
     }
+    if(*state == FROG){
+        add_timer(FROG_MAX_TIME, state);
+    }
+}
+
+void add_timer(int i, CellState *st) {
+    frog_timer = clock() + FROG_MAX_TIME;
+    state = st;
+
+}
+
+void check_timer(){
+    if(is_time(frog_timer) == 1){
+        *state = FREE;
+        add_item(FROG);
+    }
 }
 
 Cell* get_board_cell(int row, int col){
-    // printf("get_boadrd_cell row : %d, col : %d\n", row, col);
     return &board->cells[row][col];
 }
 
-void check_out_of_board_end(int x, int y) {
+void check_out_of_board(int x, int y) {
 
-    if(x < 0 || x >= BOARD_COLS_COUNT ||
-       y < 0 || y >= BOARD_ROWS_COUNT ){
+    if(x < 0 || x >= BOARD_COLS_COUNT || y < 0 || y >= BOARD_ROWS_COUNT ){
         set_game_over();
         logger("INFO", "Game Over!");
     }
@@ -67,39 +85,27 @@ void set_cell_free(Cell* cell){
 }
 
 void merge_cell_state(Cell* cell) {
-
-    check_out_of_board_end(cell->row,cell->col);
     if(get_game_state() != RUNNING){
         return;
     }
-    //CellState current_state = game->board->cells[cell->row][cell->col].state;
+    check_out_of_board(cell->row, cell->col);
+    check_timer();
     switch (cell->state) {
         case SNAKE_PART:
-
             logger("INFO", "Cannibalism");
            set_game_over();
-
-
-            break;
-        case SNAKE_HEAD:
-            logger("INFO", "Changed head");
             break;
         case FROG:
             logger("INFO", "Nice! Tasty frog");
-            //game->board->cells[cell->row][cell->col].state = SNAKE_HEAD;
             move_and_add(cell);
             add_item(FROG);
+            add_score();
             break;
         case STONE:
             logger("INFO", "Rolling Stones");
             move(cell);
             remove_from_snake_tail();
-//            remove_from_snake_tail();
             add_item(STONE);
-            break;
-        case WALL:
-            logger("INFO", "Another brick in the wall");
-            set_game_over();
             break;
         case FREE:
             move(cell);

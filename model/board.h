@@ -21,4 +21,5 @@ void add_item(CellState item);
 void set_cell_free(Cell* cell);
 void merge_cell_state(Cell* cell);
 Cell* get_board_cell(int row, int col);
+void check_out_of_board(int x, int y);
 #endif //SNAKE_2_BOARD_H

@@ -1,12 +1,11 @@
 #include "game.h"
 #include "point.h"
+#include "../view/view.h"
 #include <malloc.h>
-#include <time.h>
 
 
 Game* game = NULL;
 
-clock_t start,speed_timer,delay_timer;
 
 void init_game(){
     game = malloc(sizeof (Game));
@@ -16,6 +15,7 @@ void init_game(){
     }
     logger("INFO", "Game struct created");
     game->title = GAME_NAME;
+    game->game_score = 0;
     game->windowWidth  = WINDOW_WIDTH;
     game->windowHeight = WINDOW_HEIGHT;
     game->windowPosX   = WINDOW_POSITION_X;
@@ -27,9 +27,7 @@ void init_game(){
     add_item(FROG);
     add_item(STONE);
     game->game_state = MENU;
-    //начинаем через 1 секунду после инициализации
-    speed_timer = clock() + 1000;
-    delay_timer = 0;
+
 }
 
 void add_snake_tail_on_init(Snake* snake,int x, int y){
@@ -43,6 +41,14 @@ void start_game(){
     add_snake_tail_on_init(game->board->snake,3,5);
     game->game_state = RUNNING;
 
+}
+
+int get_score(){
+    return game->game_score;
+}
+
+void add_score(){
+    game->game_score++;
 }
 
 void set_game_over(){
@@ -89,6 +95,11 @@ Point* point_arr(){
 }
 
 int get_snake_size(){
-    return game->board->snake->size;
+    int size = game->board->snake->size;
+    if(size < 3){
+        change_go_bg();
+        set_game_over();
+    }
+    return size;
 }
 

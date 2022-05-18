@@ -21,6 +21,7 @@ typedef struct {
     int windowPosY;
     int speed;
     Game_state game_state;
+    int game_score;
     Board* board;
 } Game;
 
@@ -33,4 +34,6 @@ void pause_game();
 void sh_menu();
 Point* point_arr();
 int get_snake_size();
+void add_score();
+int get_score();
 #endif //SNAKE_2_GAME_H

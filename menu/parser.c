@@ -42,7 +42,6 @@ void add_button (Menu *menu, char **items_arr, int i);
 void convert_hex_to_color_struct (char* arr,Color* color){
   //string example #ffaaff
   if(strlen (arr) != 7){
-	printf("Wrong color format");
 	return;
   }
   	char buff[2] = {0};
@@ -56,7 +55,6 @@ int read_file(char* path, char** res) {
   char tmp[MAX_LINE_LENGTH] = {0};
   int counter = 0;
   if (!file) {
-	printf ("Wrong path");
 	exit(1);
   }
   while (fgets(tmp, MAX_LINE_LENGTH, file)) {
@@ -69,7 +67,6 @@ int read_file(char* path, char** res) {
   }
 
   if (fclose(file)) {
-	printf ("Can't close file");
 	exit (1);
   }
   return counter;
@@ -111,7 +108,6 @@ void check_begin_and_end (char **arr, int cnt)
 	return;
   }
   else{
-	printf("Wrong format! MenuBegin or MenuEnd missing");
 	exit(1);
   }
 }
@@ -122,10 +118,11 @@ void menu_parser(char* path, Menu* menu){
   check_begin_and_end(arr, line_cnt);
   int item_pos[MAX_ITEMS_COUNT];
   int items_cnt = check_windows_and_buttons(arr, line_cnt, item_pos);
+
   if(items_cnt == -1){
-	printf("wrong format");
 	exit (1);
   }
+
   menu->buttons = malloc (sizeof(Button) * items_cnt);
   menu->buttons_cnt = 0;
   menu->windows = malloc (sizeof(Window) * items_cnt);

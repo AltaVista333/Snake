@@ -56,9 +56,6 @@ Snake_fragment_to_draw* get_fragments(){
         fragments[get_snake_size() - 1].fragment = TAIL_UP;
 
     }
-
-
-
     return fragments;
 }
 

@@ -4,15 +4,16 @@
 #include "point.h"
 #include <malloc.h>
 #include <time.h>
+#include <stdio.h>
 
 
 Snake* snake = NULL;
 int is_changed = 0;
-clock_t start;
+clock_t frog_timer;
 
 clock_t speed_timer;
-//ImgType change_snake_second_segment_type();
 Node* create_node_struct();
+int is_time(clock_t time);
 Node* node_get_tail(Node* node);
 Snake* init_snake() {
      snake = malloc(sizeof(Snake));
@@ -26,11 +27,9 @@ Snake* init_snake() {
     //todo: re-write
     Node* n = create_node_struct();
     snake->head = n;
-    //game->board->cells[INIT_SNAKE_X][INIT_SNAKE_Y].state = SNAKE_HEAD;
     snake->head->cell = get_board_cell(INIT_SNAKE_X, INIT_SNAKE_Y);
     snake->head->cell->state = SNAKE_HEAD;
     snake->head->next = NULL;
-
     logger("INFO", "Snake inited");
     return snake;
 }
@@ -86,6 +85,7 @@ void remove_from_snake_tail(){
     node_remove_tail(get_snake()->head);
     set_cell_free(cell);
     get_snake()->size--;
+
 }
 Node* node_get_tail(Node* node){
     Node* tmp = node;
@@ -108,7 +108,6 @@ void change_direction(Direction d){
     if(is_changed == 1){
         return;
     }
-
     switch (d) {
 
         case UP:
@@ -132,15 +131,19 @@ Cell* board_get_cell(Cell* cell, Direction d){
     Cell* res;
     switch (d) {
         case UP:
+            check_out_of_board(cell->col, cell->row + 1);
             res =  get_board_cell(cell->col, cell->row + 1);
             break;
         case DOWN:
+            check_out_of_board(cell->col, cell->row - 1);
             res =  get_board_cell(cell->col, cell->row - 1);
             break;
         case LEFT:
+            check_out_of_board(cell->col - 1, cell->row);
             res =  get_board_cell(cell->col -1, cell->row);
             break;
         case RIGHT:
+            check_out_of_board(cell->col + 1, cell->row);
             res =  get_board_cell(cell->col + 1, cell->row);
             break;
 
@@ -149,20 +152,22 @@ Cell* board_get_cell(Cell* cell, Direction d){
 }
 
 
-void move_and_add(Cell* next){
-    Node* tmp = get_snake()->head;
-    Node* new = create_node_struct();
-    new->cell = next;
-    new->cell->state = tmp->cell->state;
-    tmp->cell->state = SNAKE_PART;
-    new->next = tmp;
-    snake->head = new;
-    snake->size++;
-}
 
-int is_time(clock_t time){
-    start = clock();
-    return start > time ? 1 : 0;
+void move_and_add(Cell* next){
+    Node* tail = node_get_tail(snake->head);
+    Node* node = get_snake()->head;
+    Cell* tmp;
+    while (node != NULL){
+        tmp = node->cell;
+        next->state = tmp->state;
+        node->cell = next;
+        node = node->next;
+        next = tmp;
+    }
+    tail->next = create_node_struct();
+    tail->next->cell = tmp;
+    tail->next->next = NULL;
+    snake->size++;
 }
 
 void add_speed_delay(){
@@ -174,18 +179,16 @@ void move_snake() {
         return;
     }
     if(!is_time(speed_timer)){
+
         return;
     }
-    //print_cells_state();
-    Node *head = get_snake()->head;
+    is_changed = 0;
     Direction direction = get_snake()->direction;
     Cell* currentCell = get_snake()->head->cell;
     Cell* nextCell = board_get_cell(currentCell, direction);
     merge_cell_state(nextCell);
-    //move_and_add(head, nextCell);
 
     add_speed_delay();
-    is_changed = 0;
 }
 
 void add_new_to_tail(Node* node, int x, int y){

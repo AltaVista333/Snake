@@ -1,27 +1,23 @@
 #include <windows.h>
-
-
 #include <GL/glut.h>
 #include <GL/glu.h>
-
 #include "view.h"
 #include "snake_fragments.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-
 
 void render_board();
 void render_object(CellState state);
 void render_background_texture();
 void render_snake();
 void draw_game_over();
-
+void show_text(char* text);
 unsigned int frog_texture;
 unsigned int tombstone_texture;
 unsigned int background_texture;
 unsigned int game_over_texture;
+unsigned int blue_screen;
+unsigned int verdana;
 struct Snake_textures{
     unsigned int head_up;
     unsigned int head_down;
@@ -42,21 +38,17 @@ struct Snake_textures{
 
 
 float texCoord[] = {1,0,0,0,0,1,1,1};
-float texCoord2[] = {1,-1,-1,-1,-1,1,1,1};
+float vertex_items[] = {0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0};
+float vert_bg[] = {-1, -1, 0, -1, 1, 0, 0.6f, 1, 0, 0.6f, -1, 0};
+float vert_game_over[] = {-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0};
+float text_game_over[] = {0, 1, 1, 1, 1, 0, 0, 0};
 
-//float texCoord[] = {-1,-1,-1,0,0,0,0,-1};
 
-//float vertex[] = {-1, -1,0,0,-1,0,0,0,0,-1,0,0};
-float vertex[] = {0, 1,0,1,1,0,1,0,0,0,0,0};
-//float vertex2[] = {-1, -1,0,-1,1,0,0.6f,1,0,0.6f,-1,0};
-float vertex2[] = {-1,-1 ,0,-1,1,0,1,1,0,1,-1,0};
-float vertex5[] = {-1, -1,0,1,-1,0,1,1,0,-1,1,0};
-float texCoord5[] = {0,1,1,1,1,0,0,0};
 
 unsigned int* snake_head_text_with_direction();
 unsigned int* snake_body_text_with_direction();
 void draw_item_new(unsigned int tex, float* vert, float* text);
-
+char* get_score_as_text();
 
 void load_img(char* path, unsigned int* dest){
     int width, height, cnt;
@@ -73,8 +65,6 @@ void load_img(char* path, unsigned int* dest){
     stbi_image_free(data);
 }
 
-
-
 void draw_game(){
     glClearColor(1,1,1,1);
     switch (get_game_state()) {
@@ -83,11 +73,13 @@ void draw_game(){
             render_board();
             render_snake();
             move_snake();
+            show_text(get_score_as_text());
             break;
         case PAUSED:
             render_background_texture();
             render_board();
             render_snake();
+            show_text(get_score_as_text());
             break;
         case MENU:
             display_function();
@@ -97,8 +89,6 @@ void draw_game(){
             break;
     }
 }
-
-
 
 void draw_game_over() {
     glPushMatrix();
@@ -112,8 +102,8 @@ void draw_game_over() {
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-    glVertexPointer(3, GL_FLOAT,0, vertex5);
-    glTexCoordPointer(2, GL_FLOAT,0,texCoord5);
+    glVertexPointer(3, GL_FLOAT, 0, vert_game_over);
+    glTexCoordPointer(2, GL_FLOAT, 0, text_game_over);
     glDrawArrays(GL_TRIANGLE_FAN,0,4);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisable(GL_BLEND);
@@ -123,7 +113,7 @@ void draw_game_over() {
 }
 
 void display(){
-    glClearColor(1,1,1,0);
+    glClearColor(0,0.8,0,0);
     glClear(GL_COLOR_BUFFER_BIT);
     draw_game();
     glutSwapBuffers();
@@ -133,9 +123,7 @@ void render_board_objects(Cell* cell){
     if(cell->state != FREE && cell->state != SNAKE_HEAD && cell->state != SNAKE_PART){
         render_object(cell->state);
     }
-   
 }
-
 
 void render_snake(){
     Snake_fragment_to_draw *fragments = get_fragments();
@@ -143,28 +131,24 @@ void render_snake(){
     glLoadIdentity();
     glTranslatef(-1,-1,0);
     // glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
-    glScalef(2.0 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
+    glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
     for (int i = 0; i < size; ++i) {
         glPushMatrix();
         glTranslatef(fragments[i].point->x, fragments[i].point->y, 0);
         unsigned int *sn_part = snake_body_text_with_direction(fragments[i].fragment);
-        draw_item_new(*sn_part,vertex,texCoord);
+        draw_item_new(*sn_part, vertex_items, texCoord);
         glPopMatrix();
     }
 }
 
 void render_board() {
     glLoadIdentity();
-
     glTranslatef(-1,-1,0);
-   // glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
-    glScalef(2.0 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
-    
+    glScalef(1.6 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,1); // 0.16 : 0.2
     for (int i = 0; i < BOARD_ROWS_COUNT; ++i) {
         for (int j = 0; j < BOARD_COLS_COUNT; ++j) {
             glPushMatrix();
             glTranslatef(i,j,0);
-//            printf("I : %d, J : %d\n",i, j);
             render_board_objects(get_board_cell(i, j));
             glPopMatrix();
         }
@@ -178,7 +162,7 @@ void render_background_texture(){
     glBindTexture(GL_TEXTURE_2D, background_texture);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glVertexPointer(3, GL_FLOAT,0, vertex2);
+    glVertexPointer(3, GL_FLOAT, 0, vert_bg);
     glTexCoordPointer(2, GL_FLOAT,0,texCoord);
     glDrawArrays(GL_TRIANGLE_FAN,0,4);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -193,10 +177,8 @@ void draw_item_new(unsigned int tex, float* vert, float* text){
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glColor3f(1,1,1);
-
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
     glVertexPointer(3, GL_FLOAT,0, vert);
     glTexCoordPointer(2, GL_FLOAT,0,text);
     glDrawArrays(GL_TRIANGLE_FAN,0,4);
@@ -206,20 +188,13 @@ void draw_item_new(unsigned int tex, float* vert, float* text){
 }
 
 void render_object(CellState state) {
-
     switch (state) {
         case FROG:
-            draw_item_new(frog_texture, vertex, texCoord);
+            draw_item_new(frog_texture, vertex_items, texCoord);
             break;
         case STONE:
-            draw_item_new(tombstone_texture, vertex, texCoord);
+            draw_item_new(tombstone_texture, vertex_items, texCoord);
             break;
-//        case SNAKE_HEAD:
-//            draw_item_new(*snake_head_text_with_direction(), vertex, texCoord);
-//            break;
-//        case SNAKE_PART:
-//            draw_item_new(*snake_body_text_with_direction(), vertex, texCoord);
-//            break;
         case WALL:
             break;
         case FREE:
@@ -228,10 +203,8 @@ void render_object(CellState state) {
 }
 
 unsigned int* snake_body_text_with_direction(Fragments type){
-    
     unsigned int* snake_body_text;
     switch (type) {
-
         case BODY_VERTICAL:
             snake_body_text = &Snake_textures.body_vertical;
             break;
@@ -278,26 +251,61 @@ unsigned int* snake_body_text_with_direction(Fragments type){
     return snake_body_text;
 }
 
-//unsigned int* snake_head_text_with_direction(){
-//    unsigned int* snake_head_text;
-//    Direction d = get_snake()->direction;
-//    switch (d) {
-//
-//        case UP:
-//
-//            break;
-//        case RIGHT:
-//            snake_head_text = &Snake_textures.head_left;
-//            break;
-//        case DOWN:
-//            snake_head_text = &Snake_textures.head_down;
-//            break;
-//        case LEFT:
-//            snake_head_text = &Snake_textures.head_right;
-//            break;
-//    }
-//    return snake_head_text;
-//}
+void render_text(char* text){
+    float rect_coord[] = {0,0,1,0,1,1,0,1};
+    float rect_text[] = {0,1,1,1,1,0,0,0};
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, verdana);
+    glPushMatrix();
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glVertexPointer(2, GL_FLOAT,0,rect_coord);
+    glTexCoordPointer(2,GL_FLOAT,0,rect_text);
+
+    while (*text) {
+
+        static float charSize = 1 / 16.0;
+        char c = *text;
+        int y = c >> 4;
+        int x = c & 0b1111;
+        struct {float left,right,top,bottom;} rct;
+        rct.left = x * charSize;
+        rct.right = rct.left + charSize;
+        rct.top = y * charSize;
+        rct.bottom = rct.top + charSize;
+        rect_text[0] = rect_text[6]= rct.left;
+        rect_text[2] = rect_text[4]= rct.right;
+        rect_text[1] = rect_text[3]= rct.bottom;
+        rect_text[5] = rect_text[7]= rct.top;
+        glDrawArrays(GL_TRIANGLE_FAN,0,4);
+        text++;
+        glTranslatef(1,0,0);
+    }
+
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+
+void show_text(char* text){
+
+glPushMatrix();
+glLoadIdentity();
+    glScalef(2.0 / BOARD_COLS_COUNT,2.0 / BOARD_ROWS_COUNT,0.1);
+    glTranslatef(6,9,0);
+    glColor3f(1,1,1);
+    render_text(text);
+    glPopMatrix();
+}
+
+char* get_score_as_text(){
+    char* x = malloc(sizeof (char) * 10);
+    sprintf(x, "%04d", get_score());
+    return x;
+}
 
 void Timer(int value) {
     glutPostRedisplay();
@@ -309,6 +317,13 @@ void init_m() {
     char* menu_file = "../menu.txt";
     SystemInitialize(menu_file);
 }
+
+void change_go_bg(){
+    game_over_texture = blue_screen;
+}
+
+
+
 
 void glut_init(int argc, char** argv){
     logger("INFO", "Loading game...");
@@ -338,6 +353,8 @@ void glut_init(int argc, char** argv){
     load_img("../img/snake/tail_down.png", &Snake_textures.tail_down);
     load_img("../img/snake/tail_left.png", &Snake_textures.tail_left);
     load_img("../img/snake/tail_right.png", &Snake_textures.tail_right);
+    load_img("../img/Verdana.png", &verdana);
+    load_img("../img/blue_screen.png", &blue_screen);
 
     glutDisplayFunc(display);
 
